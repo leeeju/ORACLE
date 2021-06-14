@@ -1,0 +1,87 @@
+SQL 1일차 실습 문제 (SELECT)
+                                      
+이름 : 이주현
+
+
+EX1. 급여가 $10000를 넘는 사원의 이름 및 급여를 표시하는 질의를 작성하시오.
+
+SELECT LAST_NAME, SALARY
+FROM EMP
+WHERE SALARY >= 10000 ;
+
+EX2. 사원의 번호가 100인 사원의 이름 및 부서 번호를 표시하는 질의를 작성하시오.
+SELECT  EMPLOYEE_ID,LAST_NAME,DEPARTMENT_ID
+FROM EMP
+WHERE  EMPLOYEE_ID IN (100);
+                                                        
+ 
+EX3. 급여가 $15000 이상 ~ $22000 이하의 범위에 속하지 않는 
+모든 사원의 이름 및 급여를 표시하는 질의를 작성하시오.
+SELECT LAST_NAME, SALARY
+FROM EMP
+WHERE SALARY >= 15000 AND SALARY <= 22000;
+
+
+EX4. 2004년 2월 2일 ~ 2004년 5월 1일에 입사한 
+사원 이름, 직위 및 시작일을 표시한다. 
+시작일을 기준으로해서 오름차순 정렬한다. 
+SELECT LAST_NAME, JOB_ID, HIRE_DATE
+FROM EMP
+WHERE HIRE_DATE BETWEEN '2004-02-02' AND '2004-05-01' ;
+                                   
+
+
+EX5. 부서 10및 30에 속하는 모든 사원의 이름 및 부서 번호를 
+이름을 기준으로 해서 영문자순으로 표시한다.
+
+SELECT LAST_NAME, DEPARTMENT_ID
+FROM EMP
+WHERE  DEPARTMENT_ID IN (10,30) ;
+
+ 
+EX6. 부서 10 또는 30에 속하는 사원 중 급여가 $5000를 넘는 
+      사원의 이름 및 급여를 표시하도록 하며, 
+      EMPLOYEE 및 MONTHLY SALARY 으로 이름을 바꾸시오.
+
+
+
+EX7. 2004년에 입사한 모든 사원의 이름 및 입사일을 표시한다.
+SELECT first_name, LAST_NAME, HIRE_DATE
+FROM EMP
+WHERE HIRE_DATE BETWEEN '2004-01-01' AND '2004-12-31' ;
+
+
+EX8. 관리자가 없는 모든 사원의 이름 및 직위를 표시한다.
+SELECT *
+FROM EMP
+WHERE MANAGER_ID IS NULL;
+
+
+EX9. 커미션을 받는 모든 사원의 이름, 급여 및 커미션을 
+급여 및 커미션을 기준으로 해서 내림차순 정렬하시오.
+SELECT FIRST_NAME, COMMISSION_PCT, SALARY, HIRE_DATE
+FROM EMP
+WHERE  COMMISSION_PCT IS NOT NULL;
+
+EX10. 이름의 세 번째 문자가 A인 모든 사원의 이름을 표시한다.
+SELECT LAST_NAME, SALARY
+FROM EMP
+WHERE LAST_NAME LIKE  '__a%';
+
+
+EX11. 이름에 s가 두 번 들어가며 부서 50 또는 80에 속한 모든 사원의 이름을 표시한다.
+
+
+
+EX12. 업무가 CLERK 면서 급여가 $1000, 3000, $5000가 아닌 
+모든 사원의 이름, 직무 및 급여를 표시한다.
+SELECT LAST_NAME, JOB_ID, SALARY
+FROM EMP
+WHERE JOB_ID LIKE '%CLERK%' AND SALARY NOT IN (1000, 3000, 5000);
+                               
+EX13. 커미션과 급여의 합계가 10% 인상된 급여보다 많은 
+모든 사원의 이름, 급여 및 커미션을 표시하도록 한다.
+
+SELECT LAST_NAME, SALARY, COMMISSION_PCT
+FROM EMP
+WHERE  SALARY + (SALARY * COMMISSION_PCT) > SALARY +(SALARY * 0.10);
