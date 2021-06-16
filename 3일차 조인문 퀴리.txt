@@ -1,0 +1,121 @@
+## 3일차 - JOIN 
+
+CREATE TABLE DEPT
+AS
+SELECT * FROM HR.DEPT ;
+
+CREATE TABLE LOCATIONS
+AS
+SELECT * FROM HR.LOCATIONS ;
+
+CREATE TABLE JOB_GRADES
+AS
+SELECT * FROM HR.JOB_GRADES ;
+
+--------------------------------------------------
+
+## 조인
+
+## EQUI JOIN ( = 동등조인 )
+
+## 오라클 전용 구문
+
+사번, 이름, 부서명
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP, DEPT
+WHERE EMP.DEPARTMENT_ID = DEPT.DEPARTMENT_ID ;
+
+## 표준 구문
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP JOIN  DEPT ON (EMP.DEPARTMENT_ID = DEPT.DEPARTMENT_ID ) ;
+
+-- 두 테이블에 같은 컬럼명이 있는 경우
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP JOIN  DEPT USING ( DEPARTMENT_ID ) ;
+
+## 성능을 향상시킬 수 있는 방법
+-- 테이블의 별칭을 이용하여 컬럼의 위치를 한정한다.
+
+SELECT E.EMPLOYEE_ID, E.LAST_NAME, D.DEPARTMENT_NAME
+FROM  EMP E JOIN  DEPT  D
+           ON (E.DEPARTMENT_ID = D.DEPARTMENT_ID ) ;
+
+---------------------------------------------------------------------
+
+## 여러 테이블 조인
+-- 테이블은 두개씩 조인된다.
+
+SELECT *
+FROM    A, B, C
+WHERE  A.a = B.a  and B.c = C.c ;
+
+SELECT *
+FROM    A JOIN B ON ( A.a=B.a )  JOIN  C  ON ( A.c=C.c )
+
+----------------------------------------------------------------------
+
+## OUTER JOIN 
+
+## 오라클 전용 구문
+-- LEFT OUTER JOIN
+-- RIGHT OUTER JOIN
+-- FULL OUTER JOIN => 지원하지 않는다!!
+
+-- LEFT OUTER JOIN
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP, DEPT
+WHERE EMP.DEPARTMENT_ID = DEPT.DEPARTMENT_ID(+) ;
+
+-- RIGHT OUTER JOIN
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP, DEPT
+WHERE EMP.DEPARTMENT_ID(+) = DEPT.DEPARTMENT_ID ;
+
+
+## 표준 구문
+-- LEFT OUTER JOIN
+-- RIGHT OUTER JOIN
+-- FULL OUTER JOIN 
+-- OUTER 생략가능
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP LEFT OUTER JOIN  DEPT USING ( DEPARTMENT_ID ) ;
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP RIGHT OUTER JOIN  DEPT USING ( DEPARTMENT_ID ) ;
+
+SELECT EMPLOYEE_ID, LAST_NAME, DEPARTMENT_NAME
+FROM  EMP FULL OUTER JOIN  DEPT USING ( DEPARTMENT_ID ) ;
+
+------------------------------------------------------------------------------
+
+## NON-EQUI JOIN
+
+-- 사원의 월급레벨을 검색
+
+이름, 월급, 월급레벨 
+
+SELECT E.LAST_NAME, E.SALARY, G.GRADE_LEVEL
+FROM  EMP E , JOB_GRADES G 
+WHERE E.SALARY BETWEEN G.LOWEST_SAL AND G.HIGHEST_SAL ;
+
+SELECT E.LAST_NAME, E.SALARY, G.GRADE_LEVEL
+FROM  EMP E JOIN JOB_GRADES G 
+           ON ( E.SALARY BETWEEN G.LOWEST_SAL AND G.HIGHEST_SAL ) ;
+
+-------------------------------------------------------------------------------
+
+## SELF JOIN
+-- 테이블의 별칭을 다르게 지정하여 일반 조인처럼 조인한다.
+
+-- 사번, 이름, 직속상관이름 
+
+SELECT E.EMPLOYEE_ID, E.LAST_NAME,  M.LAST_NAME
+FROM  EMP E JOIN EMP M 
+           ON ( E.MANAGER_ID = M.EMPLOYEE_ID) ;
+
+
+                 
