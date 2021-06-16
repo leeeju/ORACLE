@@ -1,0 +1,69 @@
+##  SQL 조인문제 
+-- 오라클 구문, Ansi 표준 구문 두가지로 기술해 주세요.
+ 
+EX1. 모든 사원의 이름, 부서 번호, 부서 이름을 표시하는 질의를 작성하시오.
+
+select E.MANAGER_ID, E.LAST_NAME, M.DEPARTMENT_NAME
+from emp E join dept M
+    where E.DEPARTMENT_ID = M.DEPARTMENT_ID ;
+
+EX2. 부서 60에 속하는 모든 사원의 이름과 부서이름을 표시하는 질의를 작성하시오.
+
+select last_name, DEPARTMENT_NAME
+
+
+EX3. 커미션을 받는 모든 사원의 이름과 부서이름을 표시하는 질의를 작성하시오.
+
+select LAST_NAME, DEPARTMENT_NAME
+from emp join dept on (emp.DEPARTMENT_ID = dept.DEPARTMENT_ID);
+where COMMISSION_PCT is not null;
+
+EX4. 이름에 A가 들어가는 모든 사원의 이름과 부서이름을 표시하는 질의를 작성하시오.
+select LAST_NAME, DEPARTMENT_NAME
+from emp join dept on (emp.DEPARTMENT_ID = dept.DEPARTMENT_ID)
+where upper(LAST_NAME) like '%A%' ;
+
+
+EX5. LOCATION_ID가 1700 에서 근무하는 
+      모든 사원의 이름, 직위, 부서 번호 및 부서 이름을 표시하는 질의를 작성한다.
+select LOCATION_ID, LAST_NAME, DEPARTMENT_NAME, JOB_ID
+from emp, dept
+where emp.DEPARTMENT_ID = dept.DEPARTMENT_ID and dept.LOCATION_ID =1700;
+ 
+## Seattle 도시에 근무하는 모든 사원의 정보
+select  emp join dept using()
+
+
+
+EX6. 사원의 이름 및 사원 번호, 관리자(상사)의 이름과 관리자 번호와 함께 표시하고 
+      열 레이블 각각 Employee, Emp#, Manager, Mgr#로 지정한다.
+      단, 매니저가 없는 사원도 출력하시오.
+select E.last_name AS Employee, 
+         E.EMPLOYEE_ID AS Emp#,       
+         M.MANAGER_ID AS Manager,
+         M.MANAGER_ID AS Mgr#
+from emp E, emp M
+where E.MANAGER_ID = M.EMPLOYEE_ID(+) ;
+
+
+EX7. SALGRADE 테이블의 구조를 확인하고, 모든 사원의 이름, 직위, 부서 이름, 급여 및 등급을 표시하는 질의 작성하시오.
+      단, 급여가 많은 사원부터 출력하시오.
+
+create view test_vu
+as
+
+
+
+
+
+EX8. Chen 사원보다 늦게 입사한 사원의 이름과 입사일을 표시하는 질의를 작성 하시오.
+
+select M.last_name, M.hire_date
+from emp E join emp M on (E.hire_date < M.hire_date)
+where E.last_name in ('Chen');
+
+select last_name, hire_date
+from emp
+where hire_date > (select hire_date from emp where last_name like '%Chen%');
+
+
