@@ -1,0 +1,89 @@
+## 서브쿼리 실습문제  
+
+
+EX1. Chen와 동일한 부서에 속한 모든 사원의 이름과 입사일을 표시하는 질의를 작성하고 Chen 본인은 제외 시키시오.
+SELECT LAST_NAME, HIRE_DATE
+FROM EMP
+WHERE DEPARTMENT_ID = ( SELECT DEPARTMENT_ID
+			FROM EMP
+			WHERE LAST_NAME = 'Chen');
+
+
+EX2. 자신의 급여가 평균 급여보다 많은 모든 사원의 사원 번호, 이름, 급여를 표시하는 질의를 작성하고 
+      급여를 기준으로 내림차순으로 정렬합니다. 
+
+SELECT EMPLOYEE_ID, LAST_NAME, SALARY
+FROM EMP
+WHERE SALARY > (SELECT AVG(SALARY) FROM EMP );
+
+
+EX3. 이름에 T 가 들어가는 사원이 속한 부서에서 근무하는 모든 사원의 사원 번호와 이름을 표시하는 질의를 작성하시오.
+SELECT EMPLOYEE_ID, LAST_NAME
+ FROM   EMP
+ WHERE DEPARTMENT_ID   IN
+                 ( SELECT   DISTINCT DEPARTMENT_ID 
+                   FROM   EMP
+                   WHERE  LOWER(LAST_NAME) LIKE '%t%' )  ;
+
+EX4. 부서 위치한 도시가  'Seattle' 인 모든 사원의 이름, 부서 번호 및 직무를 표시합니다. 
+
+SELECT LAST_NAME, EMPLOYEE_ID, JOB_ID
+FROM EMP
+WHERE DEPARTMENT_ID IN ( SELECT DEPARTMENT_ID
+			FROM DEPT
+			WHERE LOCATION_ID = 
+				(SELECT LOCATION_ID
+				FROM LOCATIONS
+				WHERE CITY LIKE '%Seattle%'));
+
+
+EX5. Kochhar 에게 보고하는 모든 사원의 이름과 급여를 표시합니다.
+
+SELECT  LAST_NAME, SALARY
+FROM   EMP
+WHERE  MANAGER_ID = (SELECT EMPLOYEE_ID FROM EMP WHERE LAST_NAME = 'Kochhar' );
+
+
+EX6. Sales 부서의 모든 사원에 대한 부서 번호, 이름 직무를 표시하시오.
+
+SELECT EMPLOYEE_ID, JOB_ID
+FROM EMP
+WHERE DEPARTMENT_ID = ( SELECT DEPARTMENT_ID
+			FROM DEPT
+			WHERE DEPARTMENT_NAME = 'Sales');   
+
+
+EX7. 자신의 급여가 평균 급여보다 많으면서 이름에 T가 들어가는 사원과 동일한 부서에 근무하는 모든 사원의 사원 번호, 이름 및 급여를 표시하도록 하시오. 
+SELECT DEPARTMENT_ID, LAST_NAME, SALARY
+FROM EMP
+WHERE SALARY >= (SELECT AVG(SALARY) FROM EMP
+   AND  DEPARTMENT_ID IN 
+( SELECT DISTINCT DEPARTMENT_ID
+FROM EMP
+ WHERE UPPER(LAST_NAME) LIKE '%T%') ;
+
+
+EX8. Fox 와 같은 커미션을 받는 사원 중에  
+       Fox 급여보다 많이 받는 모든 사원의 이름, 입사일 및 급여를 표시하는 질의를 작성하시오.
+
+SELECT   LAST_NAME, HIRE_DATE, SALARY
+FROM    EMP
+WHERE   COMMISSION_PCT = (  SELECT COMMISSION_PCT 
+			      FROM EMP
+			      WHERE LAST_NAME = 'Fox' )
+    AND SALARY > (  SELECT SALARY
+		   FROM EMP
+		   WHERE LAST_NAME = 'Fox' )  ;
+
+
+EX9. 사무원 직군의 최고 급여보다 많이 받는 사원을 표시하는 질의를 작성하고 결과를 최고 급여에서 최저 급여의 순으로 정렬하시오.
+
+
+SELECT   LAST_NAME, SALARY, JOB_ID
+FROM    EMP
+WHERE  SALARY >  ( SELECT MAX(SALARY) FROM EMP WHERE JOB_ID LIKE '%CLERK%' )
+ORDER BY SALARY DESC ;
+
+
+
+
