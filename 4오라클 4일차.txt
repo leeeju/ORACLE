@@ -1,0 +1,430 @@
+==================<4일차 DML DDL>=============
+
+## DML
+
+-- CRUD : 추가, 조회, 수정, 삭제
+-- IN)SET, UPDATE, DELETE ==> 로그가 남는다 -->복구 가능
+
+CREATE TABLE TT1(
+NUM  NUMBER(5)   PRIMARY KEY,
+NAME VARCHAR2(30),
+BIRTH DATE
+);
+
+INSERT INTO TT1(NUM, NAME, BIRTH) VALUES( 111, '이주현', '1993-01-31');
+
+INSERT INTO TT1 VALUES( 222, '홍길동', '1996-01-31');
+
+INSERT INTO TT1 VALUES( 333, '고릴라', NULL);
+
+-- 다른 테이블의 자료를 읽어서 대량으로 입력하는 방법
+-- 데이터 타입과 크기가 같아야 한다.
+
+CREATE TABLE TT2(
+NUM  NUMBER(6)   PRIMARY KEY,
+NAME VARCHAR2(20),
+BIRTH DATE
+);
+
+INSERT INTO TT2
+ SELECT EMPLOYEE_ID, LAST_NAME, HIRE_DATE
+ FROM EMP
+ WHERE JOB_ID LIKE 'IT%';
+
+----------------------------------------------------
+## UPDATE
+-- 변경하고자 하는 행의 조건을 WHERE에 기술한다
+-- ★WHERE절 생략시 모든 행의 컬럼의 값이 변경된다 
+-- NUM 105 인 자료의 NAME -> 'AAA' 로 수정
+
+UPDATE TT2
+SET NAME = 'AAA' ,  BIRTH = '2000-10-10'
+WHERE NUM = 105;
+
+
+-- 'Chen'의 급여를 'Gee'급여로 수정하라
+
+UPDATE EMP
+SET SALARY = ( SELECT SALARY 
+		FROM EMP
+		WHERE LAST_NAME = 'Gee')
+WHERE LAST_NAME = 'Chen';
+--------------------------------------------------------
+##DELETE
+--조건에 맞는 ROW 삭제
+--WHERE 반드시 사용하기 <안하면 전부 삭제됨>
+
+DELETE FROM 테이블 명;  ==> 입력된 모든 행이 삭제됨, 스키마만 남는다!
+
+2007년 생일인 정보를 삭제
+
+DELETE FROM TT2
+WHERE TO_CHAR(BIRTH, 'YYYY') = '2007';
+-------------------------------------------------------------------------------------
+
+##트렌잭션
+
+-- 하나의 업무단위 : 이체, 가입, 탈퇴..
+-- DML문 의 묶음 단위
+-- 트랜잭션의 특징 : 원자성, 일관성, 지속성, 
+
+
+INSERT INTO TT2 VALUES (111, 'BBB', '2000-10-10');
+INSERT INTO TT2 VALUES (111, 'CCC', '2010-11-10');
+INSERT INTO TT2 VALUES (111, 'DDD', '2020-12-10');
+
+###트랜잭션 연산
+--> COMMIT;      --> 서버에 넘겨서 저장한다
+--> ROLLBACK;
+
+## DDL
+-- CREATE, ALTER, DROP
+-- AUTO COMMIT 설정
+-- 단독 트랜잭션
+
+## DML
+-- INSERT, UPDATE, DELETE
+-- AUTO COMMIT OFF -->  묶어서 작업 가능
+
+## AUTO COMMIT
+--DDL 사용전
+--정상적 로그아웃
+
+## AUTO ROLLBACK
+-- 시스템 오류
+-- 비정상적 로그아웃
+-----------------------------------------------------------------
+## SAVE POINT 지정하기
+--SAVE POINT [세이브포인트명] ;
+-- 하나의 트렌잭션의 일부만 COMMIT 또는 ROLLBACK 할 수 있다
+
+CREATE TABLE TT3(
+A NUMBER(3),
+B NUMBER(3)
+);
+
+INSERT INTO TT3 VALUES (111,222);
+INSERT INTO TT3 VALUES (111,222);
+INSERT INTO TT3 VALUES (111,222);
+
+SAVEPOINT SP1;
+
+INSERT INTO TT3 VALUES (222,222);
+INSERT INTO TT3 VALUES (222,222);
+INSERT INTO TT3 VALUES (222,222);
+
+ROLLBACK TO SP1 ;
+
+COMMIT ;
+======================================
+##DDL
+-- CREATE,
+
+-- 테이블 생성
+-- CREATE
+
+CREATE TABLE TT4 (
+ A    NUMBER(3),
+ B    VARCHAR2(20)
+);
+
+--테이블 구조변경
+-- ALTER
+-- ADD : 칼럼 추가
+-- OMDIFY : 데이터 타입 변경 ( 사이즈 확장)
+-- DROP : 칼럼 삭제
+
+ALTER TABLE TT4
+ADD ( C VARCHAR2(30), D DATE);
+
+ALTER TABLE TT4
+MODIFY A NUMBER(5);
+
+ALTER TABLE TT4
+DROP ( C , D ) ;
+
+##DROP
+-- 테이블 삭제
+-- 테이블 전부 삭제 : 스키마 + 자료
+DROP TABLE TT1;
+
+## TRUNCATE
+-- 테이블 절단 : 자료만 삭제 -> 스키마는 남는다
+
+TRUNCATE TABLE TT2;
+
+--------------------------------------------------------------------------------------
+명령어                구분    |    로그   |   복구    |   삭제                    활용성
+---------------------------------------------------------------------------------------
+DELETE                DML   |     YES   |    YES    |  ROW                    혹시 모를때
+TRUNCATE           DDL    |     NO   |    NO    |  자료모두               뒤가 없을때
+DROP                  DDL    |     NO   |    NO    |  스키마 + 자료        뒤가 없을때
+----------------------------------------------------------------------------------------
+
+## 테이블 이름을 변경
+
+RENAME TT3 TO TEST ;
+
+
+## 테이블 딕셔너리
+-- USER_TABLES
+
+SELECT *
+FROM USER_TABLES;
+
+SELECT *
+FROM TAB;
+
+
+=====================
+## 테이블 제약 조건
+
+## 제약조건
+--- 기본키
+--- 외래키
+--- UNIQUE
+--- NOT NULL
+--- CHECK (조건식)
+
+T_DEPT (DEPT_NO, DEPT_NAME )
+T_EMP (EMP_ID, NAME, GENDER, EMAIL, HIRE_DATE, DEPT_NO )
+
+** 부모 테이블 생성 -> 자식 테이블을 생성
+
+CREATE TABLE T_DEPT(
+ DEPT_NO        NUMBER(2)      PRIMARY KEY,
+ DEPT_NAME    VARCHAR(50)   NOT NULL
+);
+
+
+CREATE TABLE T_EMP (
+ EMP_ID      NUMBER(3)   PRIMARY KEY,
+ NAME      VARCHAR2(5)   NOT NULL,
+ GENDER      CHAR(1)      CHECK ( GENDER  IN ('F','M')),
+ EMAIL      VARCHAR2(100)   UNIQUE,
+ HIRE_DATE   DATE      DEFAULT SYSDATE,
+ DEPT_NO      NUMBER(2)   REFERENCES T_DEPT(DEPT_NO)   
+
+);  //REFERENCE 동일타입이어야   
+
+CREATE TABLE AA (
+ A NUMBER(3)
+, B NUMBER(3)
+, C NUMBER(3)
+, D NUMBER(3)
+);
+
+INSERT INTO T_DEPT VALUES (10 , '생산부');
+INSERT INTO T_DEPT VALUES (20 , '판매부');
+INSERT INTO T_DEPT VALUES (30 , '운영부');
+
+INSERT INTO T_DEPT VALUES (30 , '운영부');
+---> 오류
+
+
+INSERT INTO T_DEPT VALUES (30 , NULL);
+--> NULL 오류
+
+
+## 제약 조건 확인
+-- USER_CONSTRAINTS
+
+SELECT *
+FROM USER_CONSTRAINTS;
+WHERE TABLE_NAME = 'T_DEPT';
+==> 테이블명은 대문자로
+
+
+T_EMP (EMP_ID, NAME, GENDER, EMAIL, HIRE_DATE, DEPT_NO )
+ // 성별에 잘못 된 것이 입력 됬을 때
+INSERT INTO T_EMP 
+	VALUES(200, 'BBB', 'A', 'A@NAVER.COM', '2000-10-10', 10);
+===>  check constraint (DA14.SYS_C00420794) violated
+            오류 내용
+INSERT INTO T_EMP 
+	VALUES(100, 'AAA', 'M', 'A@NAVER.COM', '2000-10-10', 10);
+==> unique constraint (DA14.SYS_C00420795) violated  
+        오류 내용
+
+##제약조건 기술시 제약조건명을 생략하면
+-- 시스템이 알아서 이름을 부여==> SYS_Cxxxxxx 등과 같이 임의로
+-- 어느 테이블에 어떤 컬럼에 어떤 제약 조건인지 제약조건명으로 확인이 어려움.
+-- 명시적으로 부여시 : 테이블_컬럼_제약조건타입 => EMP_NAME_NN
+
+## 제약조건 기술
+-- 컬럼 레벨 : 컬럼 옆으로 기술
+	-> NOT LULL 반드시 칼럼 레벨에 기술
+
+-- 테이블 레벨 : 칼럼 을 모두  기술하고 그 밑으로 기술
+	-> 기본키가 복합키인 경우 반드시 테이블 레벨에 기술
+
+CREATE TABLE TT1(
+A NUMBER(2) ,
+B NUMBER(2) ,
+
+CONSTRAINT TT1_A_PK PRIMARY KEY ( A )
+);
+
+==> 수정 
+
+CREATE TABLE TT1(
+A NUMBER(2) ,
+B NUMBER(2) NOT NULL ,
+
+CONSTRAINT TT1_A_PK PRIMARY KEY ( A )
+);
+
+## 기본키가 복합키 인경우
+CREATE TABLE TT1(
+A NUMBER(2) PRIMARY KEY,
+B NUMBER(2) PRIMARY KEY,
+C NUMBER(2) 
+
+);
+==> 칼럼 레벨에 제약조건 기술이 안됨
+
+CREATE TABLE TT1(
+A NUMBER(2) ,
+B NUMBER(2) ,
+C NUMBER(2) 
+
+CONSTRAINT TT1_A_PK PRIMARY KEY ( A,B)
+);
+
+
+-------------------------------------------------------
+## 제약조건 활성화 (기본) / 비활성화
+
+-- 비활성화
+
+SELECT *
+FROM USER_CONSTRAINTS
+WHERE TABLE_NAME = 'T_EMP';
+
+비활성화
+
+
+
+## 테이블 생성 방법
+
+1, CREATE TABLE 테이블명 (.....) ;
+    => 스키마만 생성
+
+2, CREATE TABLE 테이블명
+   AS
+  SELECT * FROM 유저, 테이블명 ;
+=> 스미카 + 자료
+=> 제약조건 NOT NULL 복사
+
+
+3, 기존테이블에 스키마만 복사  (스키마 = 껍데기)
+CREATE TABLE TTT_EMP
+AS
+SELECT * 
+FROM T_EMP
+WHERE 1 <> 1 ;
+
+==========================
+##VIEW
+
+-- 가상의 테이블 -> 물리적 테이블이 아님, 테이블 처럼 사용 가능
+-- 사용 목적 : 보안(컬럼의 대한 접근 제한), 편리성
+-- SELECT 문이 저장된 객체
+
+-- 뷰 관련 딕셔너리 -> USER_VIEWS
+
+## 뷰 생성
+
+CREATE VIEW 뷰 명
+AS
+SELECT 구문,,  ;
+
+CREATE OR REPLACE VIEW 뷰 명
+AS
+SELECT 구문,,  ;
+
+---읽기 전용 뷰
+-- 뷰를 통한 DML(수정) 작용 불가
+CREATE VIEW 뷰 명
+AS
+SELECT 구문,, 
+WITH READ ONLY;
+
+--ALTER VIEW 사용하지 않는다
+
+## 뷰 사용
+-- 일반 테이블 사용과 동일
+
+## 뷰 삭제
+
+DROP VIEW 뷰 명 ;
+
+
+## 뷰와 관련된 권한
+-- CREATE VIEW : SYSTEM 계정에서 권한 부여한다.
+
+## 뷰의 종류
+
+		단순 뷰 			복합 뷰
+----------------------------------------------------------------------------------
+테이블 수 :              ONE                            ONE OR MORE
+함수 :                      NO                                  YES
+그룹 :                      NO                                  YES
+DML 여부                YES                             NOT ALWAYS 
+--------------------------------------------------------------------------------------
+
+## 단순 뷰
+
+CREATE VIEW EMP_20
+AS
+SELECT LAST_NAME, SALARY
+FROM EMP;
+WHERE DEPARTMENT_ID = 21;
+
+## 복합뷰
+
+CREATE VIEW EMP_DT
+AS
+SELECT LAST_NAME, SALARY, DEPARTMENT_NAME
+FROM EMP JOIN DEPT USING(DEPARTMENT_ID);
+
+
+CREATE VIEW EMP_DTT
+AS
+SELECT DEPARTMENT_ID, COUNT(*) AS MANS
+FROM EMP
+GROUP BY DEPARTMENT_ID
+ORDER BY 1 ;
+
+## 뷰 확인
+
+SELECT *
+FROM USER_VIEWS;
+
+## 뷰 사용
+SELECT *
+FROM EMP_DT;
+
+## 복합 뷰에 자료 입력
+
+INSERT INTO EMP_DT VALUES('AA',111,'BBB');
+
+## 단순뷰에서 DML 작업하기
+
+CREATE TABLE TT1 (NAME, SALARY, JOB )
+AS
+SELECT LAST_NAME, SALARY, JOB_ID
+FROM EMP
+WHERE JOB_ID LIKE 'IT%' ;
+
+==> VIEW 생성
+
+CREATE OR REPLACE VIEW TT1_VU
+AS
+SELECT NAME, JOB
+FROM TT1
+WITH  READ ONLY;
+
+==> INSERT
+
+INSERT INTO TT1_VU VALUES('AAA', 'IT') ;
