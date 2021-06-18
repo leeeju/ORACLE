@@ -1,0 +1,139 @@
+
+<  FUNCATION >
+
+- AGGREGATE FUNCTION : 
+      COUNT, SUM, AVG, MAX, MIN 외 각종 집계 함수
+
+- WINDOW FUNCTION : 
+      분석 함수(ANALYTIC FUNCTION), 순위 함수(RANK FUNCTION)
+
+## RANK 함수
+-- 항목에 대한 순위를 구함
+-- 동일한 값에 대해서는 동일한 순위를 부여
+
+-- 부서별 급여순서, 전체 급여 순서 
+
+SELECT   DEPARTMENT_ID,  LAST_NAME, SALARY,
+             RANK( ) OVER (PARTITION BY DEPARTMENT_ID ORDER BY SALARY DESC) DEPT_RANK,
+             RANK( ) OVER (ORDER BY SALARY DESC) ALL_RANK     
+FROM    EMP
+ORDER BY DEPARTMENT_ID, SALARY DESC;
+
+
+## DENSE_RANK 함수
+-- 동일한 순위를 하나의 건수
+
+SELECT  LAST_NAME, SALARY
+          , RANK( )              OVER (ORDER BY SALARY DESC) RANK
+          , DENSE_RANK( )   OVER (ORDER BY SALARY DESC) DENSE_RANK
+FROM   EMP; 
+
+
+## ROW_NUMBER 함수
+-- 줄번호를 가져옴
+
+SELECT   JOB_ID, LAST_NAME, SALARY 
+           , RANK( )              OVER (ORDER BY SALARY DESC) RANK
+           , ROW_NUMBER()  OVER (ORDER BY SALARY DESC) ROW_NUMBER
+FROM    EMP; 
+
+============================================================
+
+## 일반 집계 함수
+-- SUM 함수를 이용해 파티션별 윈도우의 합을 구함
+
+-- 사원의 월급, 부서평균월급, 부서평균월급과 차이
+
+SELECT   DEPARTMENT_ID, LAST_NAME, SALARY
+           , ROUND( AVG(SALARY) OVER (PARTITION BY DEPARTMENT_ID)  , 0)                DEPT_AVG
+           , SALARY - ROUND( AVG(SALARY) OVER (PARTITION BY DEPARTMENT_ID)  , 0)  DIFF
+FROM    EMP ;
+
+--------------------------------------------------------------------------------------------------------
+
+## MAX
+
+-- 사원의 정보와 부서별 최고 급여 
+
+SELECT   DEPARTMENT_ID, LAST_NAME, SALARY
+           , MAX(SALARY) OVER (PARTITION BY DEPARTMENT_ID)  DEPT_MAX
+FROM    EMP;
+
+--------------------------------------------------------------------------------------------------------
+## COUNT 함수
+
+-- 내급여와 비슷한 급여를 받는 사원의 수
+
+SELECT   LAST_NAME, SALARY
+           , COUNT(*) OVER (ORDER BY SALARY RANGE BETWEEN 50 PRECEDING AND 150 FOLLOWING) as SIM_CNT
+FROM    EMP; 
+
+-- RANGE BETWEEN 50 PRECEDING AND 150 FOLLOWING
+-- 내급여 기준 -50 , +150 범위로 제한 
+
+===========================================================
+
+그룹 내 비율 함수
+
+RATIO_TO_REPORT 함수
+
+- 파티션 내 전체 칼럼 값의 백분율을 소수점으로 구함
+- 결과 값은 > 0 & <= 1 의 범위
+
+--  내급여의 비율
+SELECT   LAST_NAME, SALARY
+           , ROUND(RATIO_TO_REPORT(SALARY) OVER (),  2) as R_R 
+FROM    EMP ;
+
+-- RATIO_TO_REPORT 대신  서브쿼리를 사용가능  
+
+-----------------------------------------------------------------------------------------------------
+
+## PERCENT_RANK 함수
+
+- 파티션별 윈도우에서 제일 먼저 나오는 것을 0으로, 제일 늦게 나오는 것을 1로 하여, 
+  구간의 순서별 백분율을 구한다.
+- 결과 값은 >= 0 & <= 1 의 범위를 가진다. 
+- SQL Server에서는 지원하지 않는 함수이다.
+
+-- 부서별로 구간을 만들고, 구간의 순서별 백분율
+SELECT    DEPARTMENT_ID, LAST_NAME, SALARY
+           , PERCENT_RANK() OVER (PARTITION BY DEPARTMENT_ID ORDER BY SALARY) as P_R 
+FROM     EMP;
+
+--  전체 급여 
+SELECT   DEPARTMENT_ID, LAST_NAME, SALARY
+           , ROUND( PERCENT_RANK() OVER (ORDER BY SALARY ), 2 ) as P_R 
+FROM     EMP;
+
+---------------------------------------------------------------------------------------------------------------
+
+NTILE 함수
+
+- N 등분하여 그룹으로 분류한다.
+
+SELECT  LAST_NAME, SALARY
+          , NTILE(4) OVER (ORDER BY SALARY DESC) as QUAR_TILE 
+FROM   EMP ;
+
+=================================================================
+
+그룹함수 + OVER 정리 
+
+COUNT(*) OVER () : 전체행 카운트
+COUNT(*) OVER (PARTITION BY 컬럼) : 그룹단위로 나누어 카운트
+
+MAX(컬럼) OVER() : 전체행 중에 최고값
+MAX(컬럼) OVER(PARTITION BY 컬럼) : 그룹내 최고값
+
+MIN(컬럼) OVER () : 전체행 중에 최소값
+MIN(컬럼) OVER (PARTITION BY 컬럼) : 그룹내 최소값
+
+SUM(컬럼) OVER () : 전체행 합
+SUM(컬럼) OVER (PARTITION BY 컬럼) : 그룹내 합
+
+AVG(컬럼) OVER () : 전체행 평균
+AVG(컬럼) OVER (PARTITION BY 컬럼) : 그룹내 평균
+
+RATIO_TO_REPORT(컬럼) OVER () : 현재행값/SUM(전체행값)       %로 나타낼경우 100곱하면 됩니다.
+RATIO_TO_REPORT(컬럼) OVER (PARTITION BY 컬럼) : 현재행값 / SUM(그룹행값) %로 나타낼경우 100곱하면 됩니다.
